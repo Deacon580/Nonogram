@@ -1,13 +1,13 @@
 ﻿#include "Box.h"
 #include <cmath>
 
-// Float clamp
+extern Color color;
+
 float ClampF(float v, float lo, float hi)
 {
     return (v < lo) ? lo : (v > hi) ? hi : v;
 }
 
-// Ghost (tetik) alan: kutunun merkezinden GHOST_SIZE/2 ötede
 Rectangle GetGhost(const Box& b)
 {
     return {
@@ -18,7 +18,6 @@ Rectangle GetGhost(const Box& b)
     };
 }
 
-// Gerçek kutu dikdörtgeni (size × size) b.center’ı sol-üst köşe kabul eder
 Rectangle GetRect(const Box& b)
 {
     return {
@@ -29,7 +28,6 @@ Rectangle GetRect(const Box& b)
     };
 }
 
-// Yeni Box başlat (gridX ve gridY önden ayarlanmalı)
 void InitBox(Box& b)
 {
     b.size = BOX_MIN_SIZE;
@@ -37,7 +35,6 @@ void InitBox(Box& b)
     b.expanding = false;
 }
 
-// Fare tıklama mantığı
 void HandleInput(Box& b)
 {
     Vector2 mouse = GetMousePosition();
@@ -45,11 +42,10 @@ void HandleInput(Box& b)
         IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
         b.expanding = !b.expanding;
-        b.speed = BOX_START_SPEED; // her tıklamada taze hız
+        b.speed = BOX_START_SPEED; 
     }
 }
 
-// Animasyonu güncelle
 void UpdateBox(Box& b)
 {
     b.size += (b.expanding ? b.speed : -b.speed);
@@ -62,15 +58,13 @@ void UpdateBox(Box& b)
         b.speed = BOX_START_SPEED;
 }
 
-// Kutuyu merkezden çiz (size/2 ofsetli)
 void DrawBox(const Box& b)
 {
     Rectangle rec = GetRect(b);
     Vector2   ori = { rec.width / 2, rec.height / 2 };
-    DrawRectanglePro(rec, ori, 0.0f, WHITE);
+    DrawRectanglePro(rec, ori, 0.0f, color);
 }
 
-// Fare hover’ında ghost alanını çiz
 void DrawGhostIfHover(const Box& b)
 {
     if (CheckCollisionPointRec(GetMousePosition(), GetGhost(b)))

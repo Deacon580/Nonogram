@@ -3,7 +3,6 @@
 
 #include <iostream>
 
-// “test” fonksiyonu ve ona ait global diziler, extern olarak burada tanımlanıyor.
 
 extern int yyz[5][2];
 extern int xzy[5];

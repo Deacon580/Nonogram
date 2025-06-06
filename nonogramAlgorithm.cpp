@@ -1,12 +1,10 @@
 ﻿#include "nonogramAlgorithm.h"
 
-// test fonksiyonuna ait orijinal değişken tanımları:
 
 int yyz[5][2] = { { 3, 1 }, { 3, 1 }, { 3, 1 }, { 3, 1 }, { 3, 1 } };
 int xzy[5] = { 4, 4, 4, 4, 4 };
 int gridy[5][5] = { 0 };
 
-// “test” fonksiyonunun içeriği, tıpkı main.cpp’den taşınan orijinal kod:
 void test(int y[5][2], int x[5], int grid[5][5]) {
     int t = 0;
     int r = 0;
