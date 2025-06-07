@@ -1,13 +1,12 @@
 ﻿#ifndef NONOGRAMALGORITHM_H
 #define NONOGRAMALGORITHM_H
 
-#include <iostream>
+#include <vector>
 
-
-extern int yyz[5][2];
-extern int xzy[5];
-extern int gridy[5][5];
-
-void test(int y[5][2], int x[5], int grid[5][5]);
+void NonogramCoz(
+    const std::vector<int>& rowClues,
+    const std::vector<int>& colClues,
+    std::vector<std::vector<int>>& outputGrid
+);
 
 #endif // NONOGRAMALGORITHM_H

@@ -1,33 +1,73 @@
 ﻿#include "nonogramAlgorithm.h"
+#include <algorithm>
 
+// Nonogram cozucu fonksiyon (sadece tek ipucu icin)
+void NonogramCoz(
+    const std::vector<int>& satirIpuclari,
+    const std::vector<int>& sutunIpuclari,
+    std::vector<std::vector<int>>& ciktiTablo
+) {
+    int satirSayisi = satirIpuclari.size();
+    int sutunSayisi = sutunIpuclari.size();
 
-int yyz[5][2] = { { 3, 1 }, { 3, 1 }, { 3, 1 }, { 3, 1 }, { 3, 1 } };
-int xzy[5] = { 4, 4, 4, 4, 4 };
-int gridy[5][5] = { 0 };
+    // Cozum tablosunu sifirla (tum hucreler bosta)
+    ciktiTablo.assign(satirSayisi, std::vector<int>(sutunSayisi, 0));
 
-void test(int y[5][2], int x[5], int grid[5][5]) {
-    int t = 0;
-    int r = 0;
+    // SATIRLARIN COZUMU
+    for (int y = 0; y < satirSayisi; ++y) {
+        int ipucu = satirIpuclari[y];
+        if (ipucu == 0) continue;
 
-    for (int k = 0; k < 5; k++) {
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < y[k][i]; j++) {
-                grid[t][r] = 1;
-                t++;
-            }
-            if (t < 5) {
-                grid[t][r] = 0;
-                t++;
-            }
-            else t = 0;
+        int baslangicMin = 0;
+        int baslangicMax = sutunSayisi - ipucu;
+        std::vector<std::vector<int>> olasiliklar;
+
+        for (int baslangic = baslangicMin; baslangic <= baslangicMax; ++baslangic) {
+            std::vector<int> satir(sutunSayisi, 0);
+            for (int i = 0; i < ipucu; ++i)
+                satir[baslangic + i] = 1;
+            olasiliklar.push_back(satir);
         }
-        r++;
+
+        for (int x = 0; x < sutunSayisi; ++x) {
+            bool hepsiBir = true;
+            for (const auto& secenek : olasiliklar) {
+                if (secenek[x] != 1) {
+                    hepsiBir = false;
+                    break;
+                }
+            }
+            if (hepsiBir)
+                ciktiTablo[y][x] = 1;
+        }
     }
 
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5; j++) {
-            std::cout << grid[j][i] << ", ";
+    // SUTUNLARIN COZUMU
+    for (int x = 0; x < sutunSayisi; ++x) {
+        int ipucu = sutunIpuclari[x];
+        if (ipucu == 0) continue;
+
+        int baslangicMin = 0;
+        int baslangicMax = satirSayisi - ipucu;
+        std::vector<std::vector<int>> olasiliklar;
+
+        for (int baslangic = baslangicMin; baslangic <= baslangicMax; ++baslangic) {
+            std::vector<int> sutun(satirSayisi, 0);
+            for (int i = 0; i < ipucu; ++i)
+                sutun[baslangic + i] = 1;
+            olasiliklar.push_back(sutun);
         }
-        std::cout << "\n";
+
+        for (int y = 0; y < satirSayisi; ++y) {
+            bool hepsiBir = true;
+            for (const auto& secenek : olasiliklar) {
+                if (secenek[y] != 1) {
+                    hepsiBir = false;
+                    break;
+                }
+            }
+            if (hepsiBir)
+                ciktiTablo[y][x] = 1;
+        }
     }
 }
