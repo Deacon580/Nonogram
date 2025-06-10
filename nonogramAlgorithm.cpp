@@ -1,73 +1,91 @@
 ﻿#include "nonogramAlgorithm.h"
 #include <algorithm>
 
-// Nonogram cozucu fonksiyon (sadece tek ipucu icin)
+// Yardımcı: Belirtilen uzunlukta ve toplam genişlikte tüm geçerli satır/sütun dizilerini üret
+void GenerateLinePermutations(int length, const std::vector<int>& clues, int index,
+    std::vector<int>& current, std::vector<std::vector<int>>& results) {
+    if (index >= clues.size()) {
+        // Geriye kalan boşlukları ekle
+        while (current.size() < length)
+            current.push_back(0);
+        results.push_back(current);
+        // Geri al
+        while (!current.empty() && current.back() == 0)
+            current.pop_back();
+        return;
+    }
+
+    int remainingLength = length - current.size();
+    int minRequired = clues[index] + (clues.size() - index - 1); // blok + en az 1 boşluk
+
+    if (remainingLength < minRequired)
+        return;
+
+    // Boşluk koy ve sonra bloğu yerleştir
+    int maxLeadingZeros = remainingLength - minRequired;
+    for (int zeros = 0; zeros <= maxLeadingZeros; ++zeros) {
+        for (int z = 0; z < zeros; ++z)
+            current.push_back(0);
+        for (int f = 0; f < clues[index]; ++f)
+            current.push_back(1);
+        if (index < clues.size() - 1)
+            current.push_back(0); // sonraki bloğa boşluk
+        GenerateLinePermutations(length, clues, index + 1, current, results);
+        // Geri al
+        while (!current.empty() && current.back() == 0)
+            current.pop_back();
+        for (int f = 0; f < clues[index]; ++f)
+            current.pop_back();
+    }
+}
+
 void NonogramCoz(
-    const std::vector<int>& satirIpuclari,
-    const std::vector<int>& sutunIpuclari,
+    const std::vector<std::vector<int>>& satirIpuclari,
+    const std::vector<std::vector<int>>& sutunIpuclari,
     std::vector<std::vector<int>>& ciktiTablo
 ) {
     int satirSayisi = satirIpuclari.size();
     int sutunSayisi = sutunIpuclari.size();
 
-    // Cozum tablosunu sifirla (tum hucreler bosta)
-    ciktiTablo.assign(satirSayisi, std::vector<int>(sutunSayisi, 0));
+    ciktiTablo.assign(satirSayisi, std::vector<int>(sutunSayisi, -1)); // -1 = bilinmiyor
 
-    // SATIRLARIN COZUMU
+    // Satırlar
     for (int y = 0; y < satirSayisi; ++y) {
-        int ipucu = satirIpuclari[y];
-        if (ipucu == 0) continue;
-
-        int baslangicMin = 0;
-        int baslangicMax = sutunSayisi - ipucu;
-        std::vector<std::vector<int>> olasiliklar;
-
-        for (int baslangic = baslangicMin; baslangic <= baslangicMax; ++baslangic) {
-            std::vector<int> satir(sutunSayisi, 0);
-            for (int i = 0; i < ipucu; ++i)
-                satir[baslangic + i] = 1;
-            olasiliklar.push_back(satir);
-        }
+        std::vector<std::vector<int>> permutations;
+        std::vector<int> current;
+        GenerateLinePermutations(sutunSayisi, satirIpuclari[y], 0, current, permutations);
 
         for (int x = 0; x < sutunSayisi; ++x) {
-            bool hepsiBir = true;
-            for (const auto& secenek : olasiliklar) {
-                if (secenek[x] != 1) {
-                    hepsiBir = false;
-                    break;
-                }
+            bool alwaysFilled = true;
+            bool alwaysEmpty = true;
+            for (const auto& p : permutations) {
+                if (p[x] != 1) alwaysFilled = false;
+                if (p[x] != 0) alwaysEmpty = false;
             }
-            if (hepsiBir)
+            if (alwaysFilled)
                 ciktiTablo[y][x] = 1;
+            else if (alwaysEmpty)
+                ciktiTablo[y][x] = 0;
         }
     }
 
-    // SUTUNLARIN COZUMU
+    // Sütunlar
     for (int x = 0; x < sutunSayisi; ++x) {
-        int ipucu = sutunIpuclari[x];
-        if (ipucu == 0) continue;
-
-        int baslangicMin = 0;
-        int baslangicMax = satirSayisi - ipucu;
-        std::vector<std::vector<int>> olasiliklar;
-
-        for (int baslangic = baslangicMin; baslangic <= baslangicMax; ++baslangic) {
-            std::vector<int> sutun(satirSayisi, 0);
-            for (int i = 0; i < ipucu; ++i)
-                sutun[baslangic + i] = 1;
-            olasiliklar.push_back(sutun);
-        }
+        std::vector<std::vector<int>> permutations;
+        std::vector<int> current;
+        GenerateLinePermutations(satirSayisi, sutunIpuclari[x], 0, current, permutations);
 
         for (int y = 0; y < satirSayisi; ++y) {
-            bool hepsiBir = true;
-            for (const auto& secenek : olasiliklar) {
-                if (secenek[y] != 1) {
-                    hepsiBir = false;
-                    break;
-                }
+            bool alwaysFilled = true;
+            bool alwaysEmpty = true;
+            for (const auto& p : permutations) {
+                if (p[y] != 1) alwaysFilled = false;
+                if (p[y] != 0) alwaysEmpty = false;
             }
-            if (hepsiBir)
+            if (alwaysFilled)
                 ciktiTablo[y][x] = 1;
+            else if (alwaysEmpty)
+                ciktiTablo[y][x] = 0;
         }
     }
 }

@@ -4,8 +4,8 @@
 #include <vector>
 
 void NonogramCoz(
-    const std::vector<int>& rowClues,
-    const std::vector<int>& colClues,
+    const std::vector<std::vector<int>>& rowClues,
+    const std::vector<std::vector<int>>& colClues,
     std::vector<std::vector<int>>& outputGrid
 );
 
