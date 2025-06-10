@@ -11,6 +11,18 @@
 const int   BOX_COUNT = 25;           // <––– Sadece bunu değiştirin!
 const float BORDER_THICK = 2.0f;      // Çerçeve kalınlığı
 
+std::vector<std::vector<int>> allRowClues = {
+    {1, 1, 5, 1, 1},  // plus
+    {5, 0, 0, 0, 5}, // diagonal TL→BR
+    {1, 1, 1, 1, 1}   // vertical stripe; see colClues below
+};
+std::vector<std::vector<int>> allColClues = {
+    {1, 1, 5, 1, 1},
+    {5, 0, 0, 0, 5},
+    {0, 0, 5, 0, 0}   // middle column stripe
+};
+int currentPuzzleIndex = 0;
+
 // Beklenen id matrisini burada tutuyoruz:
 bool expectedIds[5][5] = { { 1, 0, 1, 1, 1 },
                            { 1, 1, 1, 0, 1 },
@@ -36,6 +48,16 @@ int main()
     std::vector<Box> boxes;
     int cols, rows;
     GenerateBoxes(BOX_COUNT, boxes, cols, rows);
+
+    {
+        std::vector<std::vector<int>> grid;
+        NonogramCoz(allRowClues[currentPuzzleIndex],
+            allColClues[currentPuzzleIndex],
+            grid);
+        for (int y = 0; y < 5; ++y)
+            for (int x = 0; x < 5; ++x)
+                expectedIds[y][x] = grid[y][x];
+    }
 
     while (!WindowShouldClose())
     {
@@ -89,17 +111,49 @@ int main()
         BeginDrawing();
         ClearBackground(BLACK);
 
-        DrawText(TextFormat("4"), playground.x + 50, playground.y - 80, 30, RED);
-        DrawText(TextFormat("2"), playground.x + 170, playground.y - 80, 30, RED);
-        DrawText(TextFormat("2"), playground.x + 290, playground.y - 80, 30, RED);
-        DrawText(TextFormat("1"), playground.x + 410, playground.y - 80, 30, RED);
-        DrawText(TextFormat("3\n1"), playground.x + 530, playground.y - 110, 30, RED);
+        switch (currentPuzzleIndex) {
+        case 0:
+            DrawText(TextFormat("1"), playground.x + 50, playground.y - 80, 30, RED);
+            DrawText(TextFormat("1"), playground.x + 170, playground.y - 80, 30, RED);
+            DrawText(TextFormat("5"), playground.x + 290, playground.y - 80, 30, RED);
+            DrawText(TextFormat("1"), playground.x + 410, playground.y - 80, 30, RED);
+            DrawText(TextFormat("1"), playground.x + 530, playground.y - 80, 30, RED);
 
-        DrawText(TextFormat(" 1 3"), playground.x - 60, playground.y + 40, 30, RED);
-        DrawText(TextFormat(" 3 1"), playground.x - 90, playground.y + 160, 30, RED);
-        DrawText(TextFormat(" 2 1"), playground.x - 60, playground.y + 280, 30, RED);
-        DrawText(TextFormat(" 1"), playground.x - 60, playground.y + 400, 30, RED);
-        DrawText(TextFormat(" 1"), playground.x - 30, playground.y + 520, 30, RED);
+            DrawText(TextFormat("1"), playground.x - 60, playground.y + 40, 30, RED);
+            DrawText(TextFormat("1"), playground.x - 90, playground.y + 160, 30, RED);
+            DrawText(TextFormat("5"), playground.x - 60, playground.y + 280, 30, RED);
+            DrawText(TextFormat("1"), playground.x - 60, playground.y + 400, 30, RED);
+            DrawText(TextFormat("1"), playground.x - 30, playground.y + 520, 30, RED);
+            break;
+        case 1:
+            DrawText(TextFormat("5"), playground.x + 50, playground.y - 80, 30, RED);
+            DrawText(TextFormat("2"), playground.x + 170, playground.y - 80, 30, RED);
+            DrawText(TextFormat("2"), playground.x + 290, playground.y - 80, 30, RED);
+            DrawText(TextFormat("2"), playground.x + 410, playground.y - 80, 30, RED);
+            DrawText(TextFormat("5"), playground.x + 530, playground.y - 80, 30, RED);
+
+            DrawText(TextFormat("5"), playground.x - 60, playground.y + 40, 30, RED);
+            DrawText(TextFormat("2"), playground.x - 90, playground.y + 160, 30, RED);
+            DrawText(TextFormat("2"), playground.x - 60, playground.y + 280, 30, RED);
+            DrawText(TextFormat("2"), playground.x - 60, playground.y + 400, 30, RED);
+            DrawText(TextFormat("5"), playground.x - 30, playground.y + 520, 30, RED);
+            break;
+        case 2:
+            DrawText(TextFormat("0"), playground.x + 50, playground.y - 80, 30, RED);
+            DrawText(TextFormat("0"), playground.x + 170, playground.y - 80, 30, RED);
+            DrawText(TextFormat("5"), playground.x + 290, playground.y - 80, 30, RED);
+            DrawText(TextFormat("0"), playground.x + 410, playground.y - 80, 30, RED);
+            DrawText(TextFormat("0"), playground.x + 530, playground.y - 80, 30, RED);
+
+            DrawText(TextFormat("1"), playground.x - 60, playground.y + 40, 30, RED);
+            DrawText(TextFormat("1"), playground.x - 90, playground.y + 160, 30, RED);
+            DrawText(TextFormat("1"), playground.x - 60, playground.y + 280, 30, RED);
+            DrawText(TextFormat("1"), playground.x - 60, playground.y + 400, 30, RED);
+            DrawText(TextFormat("1"), playground.x - 30, playground.y + 520, 30, RED);
+            break;
+        }
+
+        
 
         // Beyaz çerçeve (playground)
         DrawRectangleLinesEx(playground, BORDER_THICK, WHITE);
@@ -108,18 +162,46 @@ int main()
         for (const auto& b : boxes) DrawGhostIfHover(b);
         for (const auto& b : boxes) DrawBox(b);
 
+        const int btnW = 100, btnH = 40, btnM = 10, fontSize = 20;
+        Rectangle nextBtn = {
+            screenW - btnW - btnM,
+            screenH - btnH - btnM,
+            (float)btnW, (float)btnH
+        };
+        // hover effect
+        Color btnColor = CheckCollisionPointRec(GetMousePosition(), nextBtn)
+            ? GRAY : DARKGRAY;
+        DrawRectangleRec(nextBtn, btnColor);
+        int textW = MeasureText("Next", fontSize);
+        DrawText("Next",
+            (int)(nextBtn.x + (btnW - textW) / 2),
+            (int)(nextBtn.y + (btnH - fontSize) / 2),
+            fontSize, WHITE);
+
         EndDrawing();
 
-        if (IsKeyPressed(KEY_U)) {
-            std::vector<int> rowClues = { 3, 1, 1, 1, 1 };
-            std::vector<int> colClues = { 0, 0, 2, 1, 1 };
-
-            std::vector<std::vector<int>> grid;
-            NonogramCoz(rowClues, colClues, grid);
-
-            for (int y = 0; y < 5; y++) {
-                for (int x = 0; x < 5; x++) {
-                    expectedIds[y][x] = grid[y][x];
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        {
+            Vector2 m = GetMousePosition();
+            Rectangle clickBtn = {
+                screenW - btnW - btnM,
+                screenH - btnH - btnM,
+                (float)btnW, (float)btnH
+            };
+            if (CheckCollisionPointRec(m, clickBtn))
+            {
+                // advance and wrap
+                currentPuzzleIndex = (currentPuzzleIndex + 1)
+                    % (int)allRowClues.size();
+                std::vector<std::vector<int>> grid;
+                NonogramCoz(allRowClues[currentPuzzleIndex],
+                    allColClues[currentPuzzleIndex],
+                    grid);
+                for (int y = 0; y < 5; ++y){
+                    for (int x = 0; x < 5; ++x){
+                        boxes[x + y * 5].expanding = false;
+                        expectedIds[y][x] = grid[y][x];
+                    }
                 }
             }
         }
